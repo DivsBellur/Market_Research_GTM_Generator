@@ -1,0 +1,673 @@
+{
+  "name": "CapstoneProjectWorkflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6e787c59-5ecd-49c3-b0de-04866e1fd3cc",
+      "name": "When chat message received",
+      "webhookId": "01f5200f-776a-49c6-a69b-65eb4a9e270c",
+      "executeOnce": false,
+      "notes": "\"Research topic (e.g., 'OpenAI competitors', 'AI market analysis')...\""
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-5",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        224,
+        864
+      ],
+      "id": "aeee508a-4e59-412f-a77b-6d79a1772042",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "<your-anthropic-api-credential-id>",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        288,
+        256
+      ],
+      "id": "462e0f20-6ff0-4a2c-8c2b-2c4125d3e68c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a project coordinator who delegates work using simple, clear instructions. You NEVER use complex objects or structures. \nCoordinate market research for  {{ $json.chatInput }} by delegating specific tasks to team members. Delegate based on the user's request, decide which specialist tool to call: use Research Agent for information lookups, use Business Analyst Agent to make sense of the research data , use GTM Strategist Agent to develop go to market strategy and Synthesizing Agent to synthesize a final report. Use ONLY simple text strings when delegating. \n\nAfter the Synthesizing Agent produces the final report, you MUST:\n1. Call \"Create a document in Google Docs\" with an appropriate title to create a new empty document.\n2. Take the document ID/URL returned from that call.\n3. Call \"Update a document in Google Docs\" using that document ID/URL and insert the full report text as the content.\nOnly after both steps are complete should you return your final response summarizing what was created.\n\n",
+          "maxIterations": 25
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c2f83240-168a-42f2-8b88-922251b10a01",
+      "name": "Head Agent"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://host.docker.internal:8005/sse",
+        "serverTransport": "sse",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.4,
+      "position": [
+        400,
+        240
+      ],
+      "id": "690a9bff-8984-492b-b207-b4936d9dae27",
+      "name": "MCP Client - Serp APi local server"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        608,
+        416
+      ],
+      "id": "1df741b6-a6ca-47d1-8bbb-fb47eba6b0af",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://host.docker.internal:8005/sse",
+        "serverTransport": "sse",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        448
+      ],
+      "id": "a42b716f-82ba-4ba6-ac68-51056b7d3b89",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "toolDescription": "You are a market research specialist who provides well-structured research reports with proper citations. You execute comprehensive market research using web search, scraping, and MCP tools.",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "",
+          "maxIterations": 15
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        544,
+        256
+      ],
+      "id": "6fa27536-ae29-4fd1-935a-bac134f3f048",
+      "name": "Research Agent"
+    },
+    {
+      "parameters": {
+        "toolDescription": "You are a strategic business analyst who creates market sizing, competitive analysis, and insights. Your  goal is to transform research into business intelligence and market analysis.",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "",
+          "maxIterations": 15
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        800,
+        256
+      ],
+      "id": "3e9dc706-e469-4e81-b8ab-656550f59e87",
+      "name": "Business Analyst Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        848,
+        416
+      ],
+      "id": "382a5d57-d0b3-4ac8-a3ec-39fb94a80575",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://host.docker.internal:8005/sse",
+        "serverTransport": "sse",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.4,
+      "position": [
+        960,
+        416
+      ],
+      "id": "f658aa16-8d76-4757-a744-d77980193ddb",
+      "name": "MCP Client1"
+    },
+    {
+      "parameters": {
+        "toolDescription": "You are a go-to-market expert who creates actionable marketing strategies and positioning frameworks. Your goal is to develop practical go-to-market strategies and recommendations",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "",
+          "maxIterations": 15
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        1120,
+        256
+      ],
+      "id": "98d85c97-6fe9-43a6-9304-09618429d667",
+      "name": "GTM Strategist Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        1168,
+        416
+      ],
+      "id": "b67a1b1d-9724-4ca6-b10b-c3f727428676",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://host.docker.internal:8005/sse",
+        "serverTransport": "sse",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.4,
+      "position": [
+        1280,
+        416
+      ],
+      "id": "1102fafc-b17f-4350-be72-5acb553a3acd",
+      "name": "MCP Client2"
+    },
+    {
+      "parameters": {
+        "toolDescription": "AI Agent compiles all the research and strategy output into a comprehensive final report. ",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "maxIterations": 15
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        256
+      ],
+      "id": "719b00c6-ec86-4fdb-a18d-cf15a012dcc6",
+      "name": "Synthesizing Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        432
+      ],
+      "id": "fa7dbe01-2fc2-48e8-808c-182430104343",
+      "name": "Simple Memory4"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://host.docker.internal:8005/sse",
+        "serverTransport": "sse",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.4,
+      "position": [
+        1568,
+        432
+      ],
+      "id": "0ecd19eb-c6bc-4259-9252-8d5fcda3ac4f",
+      "name": "MCP Client3"
+    },
+    {
+      "parameters": {
+        "sendTo": "divyabellur@gmail.com",
+        "subject": "Report Generated",
+        "message": "={{ $json.output }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": []
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        0
+      ],
+      "id": "25d5ccd3-20f3-4bb4-ad8f-ca014a4e7dcd",
+      "name": "Send a message",
+      "webhookId": "36028386-4fd2-4a4e-850b-727ccf762388",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<your-gmail-oauth2-credential-id>",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create a document in Google Docs",
+        "driveId": "=my-drive",
+        "folderId": "=1fOgcIxnmJYDcrbETtFnY80XiOTW7chsi",
+        "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        240
+      ],
+      "id": "2b709bf7-eb42-4f8c-b29b-04174cea24e8",
+      "name": "Create a document in Google Docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "<your-google-docs-oauth2-credential-id>",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Download file in Google Drive",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $fromAI('File', ``, 'string') }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        2000,
+        176
+      ],
+      "id": "8cde98a6-de07-492d-80f3-f97488118e30",
+      "name": "Download file in Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "<your-google-drive-oauth2-credential-id>",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update a document in Google Docs",
+        "operation": "update",
+        "documentURL": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Doc_ID_or_URL', ``, 'string') }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('actionFields0_Old_Text', ``, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        512,
+        352
+      ],
+      "id": "96f2a3d7-cf34-47d2-a1dc-849a8e8cfb06",
+      "name": "Update a document in Google Docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "<your-google-docs-oauth2-credential-id>",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update a document in Google Docs",
+        "operation": "update",
+        "documentURL": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Doc_ID_or_URL', ``, 'string') }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('actionFields0_Old_Text', ``, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        704,
+        544
+      ],
+      "id": "97dd8ecb-d479-4f9b-bfdc-b76df9aad4d1",
+      "name": "Update a document in Google Docs1",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "<your-google-docs-oauth2-credential-id>",
+          "name": "Google Docs account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Business Analyst Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "GTM Strategist Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Synthesizing Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Head Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client - Serp APi local server": {
+      "ai_tool": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Business Analyst Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "Business Analyst Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Business Analyst Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GTM Strategist Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "GTM Strategist Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client2": {
+      "ai_tool": [
+        [
+          {
+            "node": "GTM Strategist Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Synthesizing Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "Synthesizing Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client3": {
+      "ai_tool": [
+        [
+          {
+            "node": "Synthesizing Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document in Google Docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Download file in Google Drive": {
+      "ai_tool": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document in Google Docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document in Google Docs1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Head Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "989a8911-4cd3-4937-8be9-13c16ffd48b0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "40f58a884617ef450a8500a60ed3054814acc463b3a7b548d84d21fc46560287"
+  },
+  "nodeGroups": [],
+  "id": "OTG1phwtW0j6GVtx",
+  "tags": []
+}
